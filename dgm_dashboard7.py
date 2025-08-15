@@ -62,11 +62,21 @@ def authenticate_user():
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel(FILE_PATH, sheet_name=DEFAULT_SHEET)
-        return df
+        # Download the file from Google Sheets (direct XLSX export link)
+        response = requests.get(FILE_URL)
+        response.raise_for_status()  # Raise error if request failed
+
+        # Load into pandas from in-memory buffer
+        data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
+
+        st.success(f"Loaded sheet: {DEFAULT_SHEET}")
+        st.dataframe(data.head())  # Just to confirm data loaded
+
+        return data
+
     except Exception as e:
         st.error(f"❌ Error reading Excel file: {e}")
-        return pd.DataFrame()
+        return None
 
 # -------------------- DEPLOYMENT HELPER --------------------
 def get_download_link(file_path):
@@ -559,3 +569,4 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
