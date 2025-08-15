@@ -17,7 +17,6 @@ try:
     df = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
 
     st.success("✅ File loaded successfully!")
-    st.dataframe(df.head())
 
 except Exception as e:
     st.error(f"❌ Error reading Excel file: {e}")
@@ -621,6 +620,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
