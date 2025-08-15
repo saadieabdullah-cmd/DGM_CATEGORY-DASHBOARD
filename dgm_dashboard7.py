@@ -8,6 +8,7 @@ import io
 import requests
 
 # -------------------- CONFIG --------------------
+# Direct export link from Google Sheets
 FILE_URL = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
 
@@ -62,18 +63,19 @@ def authenticate_user():
 def load_data():
     try:
         # First try: Pandas can read the URL directly (works if it's a direct download URL)
-        try:
-            df = pd.read_excel(FILE_URL, sheet_name=DEFAULT_SHEET, engine="openpyxl")
-            return df
-        except Exception:
-            # Fallback: download bytes via requests and read from buffer
-            resp = requests.get(FILE_URL, timeout=30)
-            resp.raise_for_status()
-            df = pd.read_excel(io.BytesIO(resp.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
-            return df
-    except Exception as e:
-        st.error(f"❌ Error reading Excel file: {e}")
-        return pd.DataFrame()
+       try:
+    # Download the file
+    response = requests.get(FILE_URL)
+    response.raise_for_status()  # Raise an error if request failed
+
+    # Load into pandas from the in-memory buffer
+    data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
+
+    st.success(f"Loaded sheet: {DEFAULT_SHEET}")
+    st.dataframe(data.head())
+
+except Exception as e:
+    st.error(f"❌ Error reading Excel file: {e}")
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
     # Current year metrics
@@ -543,5 +545,6 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
