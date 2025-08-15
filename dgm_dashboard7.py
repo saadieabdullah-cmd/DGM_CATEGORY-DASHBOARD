@@ -136,11 +136,21 @@ def authenticate_user():
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel(FILE_PATH, sheet_name=DEFAULT_SHEET)
-        return df
+        # Download the file from Google Sheets (direct XLSX export link)
+        response = requests.get(FILE_URL)
+        response.raise_for_status()  # Raise error if request failed
+
+        # Load into pandas from in-memory buffer
+        data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
+
+        st.success(f"Loaded sheet: {DEFAULT_SHEET}")
+
+        return data
+
     except Exception as e:
         st.error(f"❌ Error reading Excel file: {e}")
-        return pd.DataFrame()
+        return None
+
 
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
@@ -611,5 +621,6 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
