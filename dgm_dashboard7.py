@@ -8,7 +8,7 @@ import io
 import requests
 
 # -------------------- CONFIG --------------------
-FILE_URL = ""https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
+FILE_URL = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
 
 DGM_COL = "DGM"
@@ -543,4 +543,5 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
