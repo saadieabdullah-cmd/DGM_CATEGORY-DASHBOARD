@@ -10,7 +10,7 @@ import os
 
 # -------------------- CONFIG --------------------
 # Use relative path for deployment
-FILE_URL = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
+FILE_PATH = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xls"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
 DGM_COL = "DGM"
 CATEGORY_COL = "Category"
@@ -62,22 +62,12 @@ def authenticate_user():
 @st.cache_data
 def load_data():
     try:
-        # Download the file from Google Sheets (direct XLSX export link)
-        response = requests.get(FILE_URL)
-        response.raise_for_status()  # Raise error if request failed
-
-        # Load into pandas from in-memory buffer
-        data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
-
-        st.success(f"Loaded sheet: {DEFAULT_SHEET}")
-
-        return data
-
+        df = pd.read_excel(FILE_PATH, sheet_name=DEFAULT_SHEET)
+        return df
     except Exception as e:
         st.error(f"❌ Error reading Excel file: {e}")
-        return None
+        return pd.DataFrame()
 
-# -------------------- DEPLOYMENT HELPER --------------------
 # -------------------- DEPLOYMENT HELPER --------------------
 def get_download_link(file_path):
     """Generate download link for Excel file"""
@@ -86,6 +76,7 @@ def get_download_link(file_path):
     b64 = base64.b64encode(data).decode()
     href = f'<a href="data:application/octet-stream;base64,{b64}" download="{os.path.basename(file_path)}">📥 Download Source File</a>'
     return href
+
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
     # Current year metrics
@@ -546,19 +537,20 @@ def main():
         st.header("🔍 Detailed Data View")
         st.dataframe(df_filtered, height=600)
         
-       # Download button for filtered data
-csv = df_filtered.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="📥 Download Filtered Data",
-    data=csv,
-    file_name=f'financial_report_{current_dgm}.csv',
-    mime='text/csv'
-)
+        # Download button for filtered data
+        csv = df_filtered.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Download Filtered Data",
+            data=csv,
+            file_name=f'financial_report_{current_dgm}.csv',
+            mime='text/csv'
+        )
+        
+        # Show download link for source file (Master User only)
+        if current_dgm == "Master User":
+            st.markdown("---")
+            st.markdown(get_download_link(FILE_PATH), unsafe_allow_html=True)
 
-# Show download link for source file (Master User only)
-if current_dgm == "Master User":
-    st.markdown("---")
-    st.markdown(get_download_link(df), unsafe_allow_html=True)
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
     st.set_page_config(
@@ -567,8 +559,3 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
-
-
-
-
-
