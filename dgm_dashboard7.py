@@ -77,14 +77,33 @@ def load_data():
         st.error(f"❌ Error reading Excel file: {e}")
         return None
 
+import base64
+import os
+import requests
+
 # -------------------- DEPLOYMENT HELPER --------------------
 def get_download_link(file_path):
-    """Generate download link for Excel file"""
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{os.path.basename(file_path)}">📥 Download Source File</a>'
-    return href
+    """Generate download link for local file or remote (URL) Excel file"""
+    try:
+        if file_path.startswith("http://") or file_path.startswith("https://"):
+            # If it's a URL, fetch the file first
+            response = requests.get(file_path)
+            response.raise_for_status()
+            data = response.content
+            file_name = os.path.basename(file_path.split("?")[0]) or "download.xls"
+        else:
+            # If it's a local file
+            with open(file_path, "rb") as f:
+                data = f.read()
+            file_name = os.path.basename(file_path)
+
+        # Convert file data to base64 for download
+        b64 = base64.b64encode(data).decode()
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">📥 Download Source File</a>'
+        return href
+
+    except Exception as e:
+        return f"⚠️ Unable to generate download link: {e}"
 
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
@@ -568,5 +587,6 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
