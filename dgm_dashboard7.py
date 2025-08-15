@@ -70,7 +70,6 @@ def load_data():
         data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
 
         st.success(f"Loaded sheet: {DEFAULT_SHEET}")
-        st.dataframe(data.head())  # Just to confirm data loaded
 
         return data
 
@@ -569,4 +568,5 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
