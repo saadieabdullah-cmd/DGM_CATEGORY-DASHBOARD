@@ -62,20 +62,21 @@ def authenticate_user():
 @st.cache_data
 def load_data():
     try:
-        # First try: Pandas can read the URL directly (works if it's a direct download URL)
-       try:
-    # Download the file
-    response = requests.get(FILE_URL)
-    response.raise_for_status()  # Raise an error if request failed
+        # Download the file from Google Sheets (direct XLSX export link)
+        response = requests.get(FILE_URL)
+        response.raise_for_status()  # Raise error if request failed
 
-    # Load into pandas from the in-memory buffer
-    data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
+        # Load into pandas from in-memory buffer
+        data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
 
-    st.success(f"Loaded sheet: {DEFAULT_SHEET}")
-    st.dataframe(data.head())
+        st.success(f"Loaded sheet: {DEFAULT_SHEET}")
+        st.dataframe(data.head())  # Just to confirm data loaded
 
-except Exception as e:
-    st.error(f"❌ Error reading Excel file: {e}")
+        return data
+
+    except Exception as e:
+        st.error(f"❌ Error reading Excel file: {e}")
+        return None
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
     # Current year metrics
@@ -545,6 +546,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
