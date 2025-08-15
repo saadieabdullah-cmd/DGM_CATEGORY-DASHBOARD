@@ -78,13 +78,14 @@ def load_data():
         return None
 
 # -------------------- DEPLOYMENT HELPER --------------------
-def get_download_link(file_path):
-    """Generate download link for Excel file"""
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{os.path.basename(file_path)}">📥 Download Source File</a>'
-    return href
+# Download link for DataFrame
+def get_download_link(df, filename="source_data.xlsx"):
+    import base64
+    towrite = io.BytesIO()
+    df.to_excel(towrite, index=False, engine='openpyxl')
+    towrite.seek(0)
+    b64 = base64.b64encode(towrite.read()).decode()
+    return f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">📥 Download Excel File</a>'
 
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
@@ -555,11 +556,10 @@ def main():
             mime='text/csv'
         )
         
-        # Show download link for source file (Master User only)
-        if current_dgm == "Master User":
-            st.markdown("---")
-            st.markdown(get_download_link(FILE_PATH), unsafe_allow_html=True)
-
+       # Show download link for source file (Master User only)
+if current_dgm == "Master User":
+    st.markdown("---")
+    st.markdown(get_download_link(df), unsafe_allow_html=True)
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
     st.set_page_config(
@@ -568,5 +568,6 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
