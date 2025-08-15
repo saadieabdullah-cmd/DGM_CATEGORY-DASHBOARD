@@ -8,7 +8,7 @@ import io
 import requests
 
 # -------------------- CONFIG --------------------
-FILE_URL = "https://ideaspk-my.sharepoint.com/:x:/g/personal/saad_abdullah_ideas_com_pk/Ec3jRiB_zQNIs2JmS02hLRQBsCeUafZZCY4760eRMVkWQA?e=nEpD8q"
+FILE_URL = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/edit?usp=sharing&ouid=112699491640740808992&rtpof=true&sd=true"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
 
 DGM_COL = "DGM"
@@ -543,3 +543,4 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
