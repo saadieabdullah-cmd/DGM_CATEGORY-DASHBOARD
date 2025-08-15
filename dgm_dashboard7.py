@@ -547,16 +547,16 @@ def main():
         st.header("🔍 Detailed Data View")
         st.dataframe(df_filtered, height=600)
         
-        # Download button for filtered data
-        csv = df_filtered.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download Filtered Data",
-            data=csv,
-            file_name=f'financial_report_{current_dgm}.csv',
-            mime='text/csv'
-        )
-        
-       # Show download link for source file (Master User only)
+       # Download button for filtered data
+csv = df_filtered.to_csv(index=False).encode('utf-8')
+st.download_button(
+    label="📥 Download Filtered Data",
+    data=csv,
+    file_name=f'financial_report_{current_dgm}.csv',
+    mime='text/csv'
+)
+
+# Show download link for source file (Master User only)
 if current_dgm == "Master User":
     st.markdown("---")
     st.markdown(get_download_link(df), unsafe_allow_html=True)
@@ -568,6 +568,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
