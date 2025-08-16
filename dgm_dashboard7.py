@@ -7,8 +7,6 @@ from plotly.subplots import make_subplots
 from pathlib import Path
 import base64
 import os
-import requests
-import io
 
 # -------------------- CONFIG --------------------
 # Use relative path for deployment
@@ -602,6 +600,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
