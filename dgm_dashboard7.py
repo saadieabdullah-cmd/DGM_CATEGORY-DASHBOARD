@@ -10,7 +10,7 @@ import os
 
 # -------------------- CONFIG --------------------
 # Use relative path for deployment
-FILE_PATH = "Comparision June 2025 - lfd final.xlsx"
+FILE_PATH = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
 DGM_COL = "DGM"
 CATEGORY_COL = "Category"
@@ -559,3 +559,4 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
