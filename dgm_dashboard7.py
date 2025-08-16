@@ -62,7 +62,12 @@ def authenticate_user():
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel(FILE_PATH, sheet_name=DEFAULT_SHEET)
+        # Download Excel file from Google Sheets link
+        response = requests.get(FILE_PATH)
+        response.raise_for_status()  # Raise error if the download fails
+
+        # Read Excel directly from downloaded content
+        df = pd.read_excel(BytesIO(response.content), sheet_name=DEFAULT_SHEET)
         return df
     except Exception as e:
         st.error(f"❌ Error reading Excel file: {e}")
@@ -559,4 +564,5 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
