@@ -59,19 +59,23 @@ def authenticate_user():
     else:
         return None
 
+from io import BytesIO
+import requests
+
 # -------------------- LOAD DATA --------------------
 @st.cache_data
 def load_data():
     try:
         # Download Excel file from Google Sheets link
         response = requests.get(FILE_PATH)
-        response.raise_for_status()  # Raise error if the download fails
+        response.raise_for_status()  # Raise error if download fails
 
         # Read Excel directly from downloaded content
         df = pd.read_excel(BytesIO(response.content), sheet_name=DEFAULT_SHEET)
+        st.success("✅ Data loaded from Google Sheets")
         return df
     except Exception as e:
-        st.error(f"❌ Error reading Excel file: {e}")
+        st.error(f"❌ Error reading Excel file from Google Sheets: {e}")
         return pd.DataFrame()
 
 # -------------------- DEPLOYMENT HELPER --------------------
@@ -565,6 +569,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
