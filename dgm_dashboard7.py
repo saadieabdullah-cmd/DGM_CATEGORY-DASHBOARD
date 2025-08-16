@@ -559,11 +559,10 @@ def main():
             mime='text/csv'
         )
         
-        # Show download link for source file (Master User only)
-
+                # Show download link for source file (Master User only)
         if current_dgm == "Master User":
-    st.markdown("---")
-    st.markdown(get_download_link(df, filename="Category_PnL.xlsx"), unsafe_allow_html=True)
+            st.markdown("---")
+            st.markdown(get_download_link(df, filename="Category_PnL.xlsx"), unsafe_allow_html=True)
 
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
@@ -573,6 +572,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
