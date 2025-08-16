@@ -463,9 +463,9 @@ def main():
         return
         
     df = load_data()
-    if df.empty:
-        return
-    
+if df is None or df.empty:
+    st.warning("⚠️ No data available to display.")
+    return    
     # Handle Master User differently
     if current_dgm == "Master User":
         st.sidebar.header("🔍 Master User Controls")
@@ -587,6 +587,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
