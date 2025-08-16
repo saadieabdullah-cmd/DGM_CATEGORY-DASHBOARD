@@ -463,9 +463,10 @@ def main():
         return
         
     df = load_data()
-if df is None or df.empty:
-    st.warning("⚠️ No data available to display.")
-    return    
+    if df is None or df.empty:
+        st.warning("⚠️ No data available to display.")
+        return    
+
     # Handle Master User differently
     if current_dgm == "Master User":
         st.sidebar.header("🔍 Master User Controls")
@@ -473,10 +474,13 @@ if df is None or df.empty:
             "Select View Mode:",
             ["All DGMs Combined", "Compare DGMs", "Individual DGM"]
         )
-        
+
         if view_mode == "All DGMs Combined":
             df_filtered = df.copy()
-            st.markdown(f"<h3 style='text-align: center; color: #1f77b4;'>Master View: All DGMs Combined</h3>", unsafe_allow_html=True)
+            st.markdown(
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: All DGMs Combined</h3>",
+                unsafe_allow_html=True
+            )
             
         elif view_mode == "Compare DGMs":
             st.sidebar.subheader("Select DGMs to Compare")
@@ -487,21 +491,30 @@ if df is None or df.empty:
                 default=all_dgms[:2]  # Default to first 2 DGMs
             )
             df_filtered = df[df[DGM_COL].isin(selected_dgms)]
-            st.markdown(f"<h3 style='text-align: center; color: #1f77b4;'>Master View: Comparing {len(selected_dgms)} DGMs</h3>", unsafe_allow_html=True)
+            st.markdown(
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: Comparing {len(selected_dgms)} DGMs</h3>",
+                unsafe_allow_html=True
+            )
             
         else:  # Individual DGM
             st.sidebar.subheader("Select DGM to View")
             all_dgms = df[DGM_COL].unique()
             selected_dgm = st.sidebar.selectbox("Choose DGM", options=all_dgms)
             df_filtered = df[df[DGM_COL] == selected_dgm]
-            st.markdown(f"<h3 style='text-align: center; color: #1f77b4;'>Master View: {selected_dgm}</h3>", unsafe_allow_html=True)
+            st.markdown(
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: {selected_dgm}</h3>",
+                unsafe_allow_html=True
+            )
     else:
         # Original DGM view
         df_filtered = df[df[DGM_COL] == current_dgm]
         if df_filtered.empty:
             st.warning("⚠️ No data found for your stores.")
             return
-        st.markdown(f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>", unsafe_allow_html=True)
+        st.markdown(
+            f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>",
+            unsafe_allow_html=True
+        )
     
     # Apply additional filters
     st.sidebar.header("🔍 Filter Options")
@@ -587,6 +600,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
