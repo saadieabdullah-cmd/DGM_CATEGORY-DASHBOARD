@@ -457,15 +457,17 @@ def generate_financial_insights(df):
         st.markdown(f"- {action}")
 
 # -------------------- MAIN APP --------------------
+# -------------------- MAIN APP --------------------
 def main():
     current_dgm = authenticate_user()
     if not current_dgm:
         return
-        
+
+    # Load data
     df = load_data()
     if df is None or df.empty:
         st.warning("⚠️ No data available to display.")
-        return    
+        return
 
     # Handle Master User differently
     if current_dgm == "Master User":
@@ -478,43 +480,54 @@ def main():
         if view_mode == "All DGMs Combined":
             df_filtered = df.copy()
             st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: All DGMs Combined</h3>",
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: All DGMs Combined</h3>", 
                 unsafe_allow_html=True
             )
-            
+
         elif view_mode == "Compare DGMs":
             st.sidebar.subheader("Select DGMs to Compare")
             all_dgms = df[DGM_COL].unique()
             selected_dgms = st.sidebar.multiselect(
                 "Choose DGMs", 
                 options=all_dgms, 
-                default=all_dgms[:2]  # Default to first 2 DGMs
+                default=all_dgms[:2] if len(all_dgms) >= 2 else all_dgms
             )
+            if not selected_dgms:
+                st.warning("⚠️ Please select at least one DGM.")
+                return
             df_filtered = df[df[DGM_COL].isin(selected_dgms)]
             st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: Comparing {len(selected_dgms)} DGMs</h3>",
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: Comparing {len(selected_dgms)} DGMs</h3>", 
                 unsafe_allow_html=True
             )
-            
+
         else:  # Individual DGM
             st.sidebar.subheader("Select DGM to View")
             all_dgms = df[DGM_COL].unique()
+            if len(all_dgms) == 0:
+                st.warning("⚠️ No DGMs found in data.")
+                return
             selected_dgm = st.sidebar.selectbox("Choose DGM", options=all_dgms)
             df_filtered = df[df[DGM_COL] == selected_dgm]
             st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: {selected_dgm}</h3>",
+                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: {selected_dgm}</h3>", 
                 unsafe_allow_html=True
             )
+
     else:
-        # Original DGM view
+        # Regular DGM view
         df_filtered = df[df[DGM_COL] == current_dgm]
         if df_filtered.empty:
             st.warning("⚠️ No data found for your stores.")
             return
         st.markdown(
-            f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>",
+            f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>", 
             unsafe_allow_html=True
         )
+
+    # At this point -> you can call your charts/tables functions
+    # Example:
+    st.write("Filtered Data Preview", df_filtered.head())
     
     # Apply additional filters
     st.sidebar.header("🔍 Filter Options")
@@ -600,6 +613,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
