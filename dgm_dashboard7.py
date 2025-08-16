@@ -4,17 +4,17 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from pathlib import Path
-import base64
-import os
+import io
+import requests
 
 # -------------------- CONFIG --------------------
-# Use relative path for deployment
-FILE_PATH = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
+# Direct export link from Google Sheets
+FILE_URL = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/export?format=xlsx"
 DEFAULT_SHEET = "CY_vs_LY_Growth"
+
 DGM_COL = "DGM"
 CATEGORY_COL = "Category"
-STORE_COL = "Store Name"
+STORE_COL = "Store Name"  # Or "Store ID" if needed
 
 # Updated to match your actual column names
 SALES_CY = "Net Sales"
@@ -40,7 +40,7 @@ DGM_PASSWORDS = {
     "Nadeem Khan": "pass123",
     "Farhan Akram": "pass124",
     "Syed Bilal": "Pass125",
-    "Master User": "MasterPass123"  # New Master User
+    # Add more DGM: password pairs
 }
 
 # -------------------- AUTH FUNCTION --------------------
@@ -63,48 +63,20 @@ def authenticate_user():
 def load_data():
     try:
         # Download the file from Google Sheets (direct XLSX export link)
-        response = requests.get(FILE_PATH)
+        response = requests.get(FILE_URL)
         response.raise_for_status()  # Raise error if request failed
 
         # Load into pandas from in-memory buffer
         data = pd.read_excel(io.BytesIO(response.content), sheet_name=DEFAULT_SHEET, engine="openpyxl")
 
         st.success(f"Loaded sheet: {DEFAULT_SHEET}")
+        st.dataframe(data.head())  # Just to confirm data loaded
 
         return data
 
     except Exception as e:
         st.error(f"❌ Error reading Excel file: {e}")
         return None
-
-import base64
-import os
-import requests
-
-# -------------------- DEPLOYMENT HELPER --------------------
-def get_download_link(file_path):
-    """Generate download link for local file or remote (PATH) Excel file"""
-    try:
-        if file_path.startswith("http://") or file_path.startswith("https://"):
-            # If it's a PATH, fetch the file first
-            response = requests.get(file_path)
-            response.raise_for_status()
-            data = response.content
-            file_name = os.path.basename(file_path.split("?")[0]) or "download.xls"
-        else:
-            # If it's a local file
-            with open(file_path, "rb") as f:
-                data = f.read()
-            file_name = os.path.basename(file_path)
-
-        # Convert file data to base64 for download
-        b64 = base64.b64encode(data).decode()
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">📥 Download Source File</a>'
-        return href
-
-    except Exception as e:
-        return f"⚠️ Unable to generate download link: {e}"
-
 # -------------------- KPI CARDS --------------------
 def render_kpi_cards(df):
     # Current year metrics
@@ -431,6 +403,8 @@ def generate_financial_insights(df):
     bottom_store = store_profits.idxmin()
     insights.append(f"🏬 **Store Performance:** '{top_store}' is the top performing store, while '{bottom_store}' needs attention")
     
+    # Expense analysis
+    
     # Display insights
     for insight in insights:
         st.info(insight)
@@ -457,78 +431,22 @@ def generate_financial_insights(df):
         st.markdown(f"- {action}")
 
 # -------------------- MAIN APP --------------------
-# -------------------- MAIN APP --------------------
 def main():
     current_dgm = authenticate_user()
     if not current_dgm:
         return
 
-    # Load data
     df = load_data()
-    if df is None or df.empty:
-        st.warning("⚠️ No data available to display.")
+    if df.empty:
         return
 
-    # Handle Master User differently
-    if current_dgm == "Master User":
-        st.sidebar.header("🔍 Master User Controls")
-        view_mode = st.sidebar.radio(
-            "Select View Mode:",
-            ["All DGMs Combined", "Compare DGMs", "Individual DGM"]
-        )
+    # Filter by DGM
+    df_filtered = df[df[DGM_COL] == current_dgm]
 
-        if view_mode == "All DGMs Combined":
-            df_filtered = df.copy()
-            st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: All DGMs Combined</h3>", 
-                unsafe_allow_html=True
-            )
+    if df_filtered.empty:
+        st.warning("⚠️ No data found for your stores.")
+        return
 
-        elif view_mode == "Compare DGMs":
-            st.sidebar.subheader("Select DGMs to Compare")
-            all_dgms = df[DGM_COL].unique()
-            selected_dgms = st.sidebar.multiselect(
-                "Choose DGMs", 
-                options=all_dgms, 
-                default=all_dgms[:2] if len(all_dgms) >= 2 else all_dgms
-            )
-            if not selected_dgms:
-                st.warning("⚠️ Please select at least one DGM.")
-                return
-            df_filtered = df[df[DGM_COL].isin(selected_dgms)]
-            st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: Comparing {len(selected_dgms)} DGMs</h3>", 
-                unsafe_allow_html=True
-            )
-
-        else:  # Individual DGM
-            st.sidebar.subheader("Select DGM to View")
-            all_dgms = df[DGM_COL].unique()
-            if len(all_dgms) == 0:
-                st.warning("⚠️ No DGMs found in data.")
-                return
-            selected_dgm = st.sidebar.selectbox("Choose DGM", options=all_dgms)
-            df_filtered = df[df[DGM_COL] == selected_dgm]
-            st.markdown(
-                f"<h3 style='text-align: center; color: #1f77b4;'>Master View: {selected_dgm}</h3>", 
-                unsafe_allow_html=True
-            )
-
-    else:
-        # Regular DGM view
-        df_filtered = df[df[DGM_COL] == current_dgm]
-        if df_filtered.empty:
-            st.warning("⚠️ No data found for your stores.")
-            return
-        st.markdown(
-            f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>", 
-            unsafe_allow_html=True
-        )
-
-    # At this point -> you can call your charts/tables functions
-    # Example:
-    st.write("Filtered Data Preview", df_filtered.head())
-    
     # Apply additional filters
     st.sidebar.header("🔍 Filter Options")
     
@@ -553,9 +471,10 @@ def main():
         (df_filtered[STORE_COL].isin(selected_stores)) & 
         (df_filtered[CATEGORY_COL].isin(selected_categories))
     ]
-    
+
     # Dashboard Title
-    st.markdown("<h1 style='text-align: center;'>📊 Financial Performance Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center;'>📊 Financial Performance Dashboard</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align: center; color: #1f77b4;'>DGM: {current_dgm}</h3>", unsafe_allow_html=True)
     
     # KPI Cards with YoY comparison
     render_kpi_cards(df_filtered)
@@ -589,9 +508,28 @@ def main():
     
     with tab5:
         st.header("🔍 Detailed Data View")
-        st.dataframe(df_filtered, height=600)
         
-        # Download button for filtered data
+        # Format currency columns
+        formatted_df = df_filtered.copy()
+        currency_cols = [
+            SALES_CY, SALES_LY, GM_CY, GM_LY, NP_CY, NP_LY,
+            "Cost of Sales", "Cost of Sales_LY",
+            "Advertisment Expenses", "Advertisment Expenses_LY",
+            "Financial Charges", "Financial Charges_LY",
+            "Total variable cost", "Total variable cost_LY",
+            "Total Occupancy cost", "Total Occupancy cost_LY",
+            "Staff related costs", "Staff related costs_LY",
+            "Total fixed cost (stores related)", "Total fixed cost (stores related)_LY",
+            "Head office Expenses", "Head office Expenses_LY"
+        ]
+        
+        for col in currency_cols:
+            if col in formatted_df.columns:
+                formatted_df[col] = formatted_df[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
+        
+        st.dataframe(formatted_df, height=600)
+        
+        # Download button
         csv = df_filtered.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 Download Filtered Data",
@@ -599,11 +537,6 @@ def main():
             file_name=f'financial_report_{current_dgm}.csv',
             mime='text/csv'
         )
-        
-        # Show download link for source file (Master User only)
-        if current_dgm == "Master User":
-            st.markdown("---")
-            st.markdown(get_download_link(FILE_PATH), unsafe_allow_html=True)
 
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
@@ -613,13 +546,6 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
-
-
-
-
-
-
-
 
 
 
