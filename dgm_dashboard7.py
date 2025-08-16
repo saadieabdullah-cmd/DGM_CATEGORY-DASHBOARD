@@ -63,7 +63,7 @@ def authenticate_user():
 def load_data():
     try:
         # Download the file from Google Sheets (direct XLSX export link)
-        response = requests.get(FILE_URL)
+        response = requests.get(FILE_PATH)
         response.raise_for_status()  # Raise error if request failed
 
         # Load into pandas from in-memory buffer
@@ -83,10 +83,10 @@ import requests
 
 # -------------------- DEPLOYMENT HELPER --------------------
 def get_download_link(file_path):
-    """Generate download link for local file or remote (URL) Excel file"""
+    """Generate download link for local file or remote (PATH) Excel file"""
     try:
         if file_path.startswith("http://") or file_path.startswith("https://"):
-            # If it's a URL, fetch the file first
+            # If it's a PATH, fetch the file first
             response = requests.get(file_path)
             response.raise_for_status()
             data = response.content
@@ -600,6 +600,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
