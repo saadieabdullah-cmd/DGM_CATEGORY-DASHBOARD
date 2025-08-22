@@ -9,21 +9,69 @@ import requests
 import base64
 import os
 
+import streamlit as st
+import pandas as pd
+
 # -------------------- CONFIG --------------------
-# Google Sheet file ID
-FILE_ID = "1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv"
+SHEET_ID = st.secrets["general"]["google_sheet_id"]
+FILE_PATH = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 
-# Use export link (CSV is safer for direct reading)
-FILE_PATH = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=xlsx"
+# Load passwords from secrets
+DGM_PASSWORDS = {
+    "Nadeem Khan": st.secrets["passwords"]["Nadeem_Khan"],
+    "Farhan Akram": st.secrets["passwords"]["Farhan_Akram"],
+    "Syed Bilal": st.secrets["passwords"]["Syed_Bilal"],
+    "Master User": st.secrets["passwords"]["Master_User"],
+}
 
-# Default sheet name (if reading Excel instead of CSV)
-DEFAULT_SHEET = "CY_vs_LY_Growth"
+# -------------------- LOGIN --------------------
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+if "current_user" not in st.session_state:
+    st.session_state["current_user"] = None
 
-# Column names
-DGM_COL = "DGM"
-CATEGORY_COL = "Category"
-STORE_COL = "Store Name"
+def login():
+    st.title("🔐 DGM Dashboard Login")
 
+    user = st.selectbox("Select your name", list(DGM_PASSWORDS.keys()))
+    password = st.text_input("Enter password", type="password")
+
+    if st.button("Login"):
+        if password == DGM_PASSWORDS[user]:
+            st.session_state["authenticated"] = True
+            st.session_state["current_user"] = user
+            st.success(f"Welcome, {user} 👋")
+            st.experimental_rerun()
+        else:
+            st.error("❌ Invalid password")
+
+def logout():
+    st.session_state["authenticated"] = False
+    st.session_state["current_user"] = None
+    st.experimental_rerun()
+
+# -------------------- MAIN APP --------------------
+if not st.session_state["authenticated"]:
+    login()
+else:
+    st.sidebar.success(f"✅ Logged in as {st.session_state['current_user']}")
+    if st.sidebar.button("Logout"):
+        logout()
+
+    # Example: Load sheet data
+    df = pd.read_csv(FILE_PATH)
+    
+    # Master user sees all
+    if st.session_state["current_user"] == "Master User":
+        st.subheader("📊 Full Dashboard")
+        st.dataframe(df)
+
+    # Individual DGM sees only their rows
+    else:
+        dgm_name = st.session_state["current_user"]
+        df_filtered = df[df["DGM"] == dgm_name]
+        st.subheader(f"📊 Dashboard for {dgm_name}")
+        st.dataframe(df_filtered)
 
 # Updated to match your actual column names
 SALES_CY = "Net Sales"
@@ -43,15 +91,6 @@ EXPENSE_MAPPING = {
     "Fixed Cost": ("Total fixed cost (stores related)", "Total fixed cost (stores related)_LY"),
     "Head Office": ("Head office Expenses", "Head office Expenses_LY")
 }
-
-# -------------------- PASSWORDS --------------------
-DGM_PASSWORDS = {
-    "Nadeem Khan": "pass123",
-    "Farhan Akram": "pass124",
-    "Syed Bilal": "Pass125",
-    "Master User": "MasterPass123"  # New Master User
-}
-
 # -------------------- AUTH FUNCTION --------------------
 def authenticate_user():
     st.title("🔐 DGM Secure Dashboard Login")
@@ -580,6 +619,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
