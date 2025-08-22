@@ -10,12 +10,20 @@ import base64
 import os
 
 # -------------------- CONFIG --------------------
-# Use relative path for deployment
-FILE_PATH = "https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/edit?usp=sharing&ouid=112699491640740808992&rtpof=true&sd=true"
+# Google Sheet file ID
+FILE_ID = "1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv"
+
+# Use export link (CSV is safer for direct reading)
+FILE_PATH = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv&gid=0"
+
+# Default sheet name (if reading Excel instead of CSV)
 DEFAULT_SHEET = "CY_vs_LY_Growth"
+
+# Column names
 DGM_COL = "DGM"
 CATEGORY_COL = "Category"
 STORE_COL = "Store Name"
+
 
 # Updated to match your actual column names
 SALES_CY = "Net Sales"
@@ -572,6 +580,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
