@@ -14,7 +14,7 @@ import os
 FILE_ID = "1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv"
 
 # Use export link (CSV is safer for direct reading)
-FILE_PATH = f"https://docs.google.com/spreadsheets/d/1Md7v62OzmWGuZNz-GKzRQgQ2WFSRI7cv/edit?usp=sharing&ouid=112699491640740808992&rtpof=true&sd=true"
+FILE_PATH = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=xlsx"
 
 # Default sheet name (if reading Excel instead of CSV)
 DEFAULT_SHEET = "CY_vs_LY_Growth"
@@ -580,6 +580,7 @@ if __name__ == "__main__":
         layout="wide"
     )
     main()
+
 
 
 
